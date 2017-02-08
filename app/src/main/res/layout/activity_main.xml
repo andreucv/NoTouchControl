@@ -9,57 +9,25 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.andreucortes.notouchmcontrol.MainActivity">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/playlists_scroll">
-        <!-- going here the playlists that you can play -->
-    </ScrollView>
-
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/play_button"
-        android:background="@drawable/roundbutton"
-        android:layout_below="@+id/playlists_scroll" />
-
+        android:text="Select here the sensibility:"
+        android:id="@+id/sensibility_text"
+        android:layout_centerVertical="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/hello"
-        android:layout_below="@+id/play_button"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textXacc"
-        android:layout_below="@id/hello"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textYacc"
-        android:layout_below="@id/textXacc"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textZacc"
-        android:layout_below="@id/textYacc"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/last_movement"
-        android:layout_below="@id/textZacc"/>
+        android:text="0/0"
+        android:id="@+id/seek_text"
+        android:layout_below="@id/sensibility_text"/>
 
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/sensibility_bar"
-        android:layout_below="@id/textZacc"
+        android:layout_below="@id/seek_text"
         android:max="20" />
 
 </RelativeLayout>

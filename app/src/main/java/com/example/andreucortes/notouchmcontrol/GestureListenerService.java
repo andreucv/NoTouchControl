@@ -24,7 +24,6 @@ public class GestureListenerService extends Service {
 
     private final String TAG = "GestureListenerService";
 
-    //private float [] values;
     private float currentX,  currentY,  currentZ;
     private float previousX, previousY, previousZ;
     private float movement = 0;

@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
     private final String TAG = "MainActivity";
 
     private SeekBar seekBarSensibility;
-    private TextView helloText;
+    private TextView seek_text;
 
     int sensibility;
 
@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        helloText = (TextView) findViewById(R.id.hello);
+        seek_text = (TextView) findViewById(R.id.seek_text);
 
         seekBarSensibility = (SeekBar) findViewById(R.id.sensibility_bar);
         seekBarSensibility.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -39,16 +39,16 @@ public class MainActivity extends Activity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                helloText.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
+                seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                helloText.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
+                seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
             }
         });
 
-        helloText.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
+        seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
         Intent gestureListenerServiceIntent = new Intent(this, GestureListenerService.class);
         bindService(gestureListenerServiceIntent, serviceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Finished MainActivity.onCreate()");
@@ -80,6 +80,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(serviceConnection);
+        gestureListenerService.unbindService(serviceConnection);
     }
 }
