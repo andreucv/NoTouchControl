@@ -16,15 +16,13 @@ import android.view.KeyEvent;
 import com.example.andreucortes.notouchmcontrol.GestureState.State;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-/**
- * Created by andreucortes on 31/01/2017.
- */
 public class GestureListenerService extends Service {
 
     private final String TAG = "GestureListenerService";
 
-    //private float [] values;
     private float currentX,  currentY,  currentZ;
     private float previousX, previousY, previousZ;
     private float movement = 0;
@@ -114,21 +112,29 @@ public class GestureListenerService extends Service {
             Log.d(TAG, "Toggling Music " + currentTime);
             toggleMusic();
         }
-        else if(currentState == State.DOUBLE_TAP){
-            // Other
-        }
-        else{
-            // Other
-        }
     }
 
     private void toggleMusic(){
-        audioManager.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+        //audioManager.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+
+        Intent mediaEvent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+        mediaEvent.putExtra(Intent.EXTRA_KEY_EVENT, event);
+        getApplicationContext().sendBroadcast(mediaEvent);
+
+        (new Timer()).schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Intent mediaEvent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+                KeyEvent event = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+                mediaEvent.putExtra(Intent.EXTRA_KEY_EVENT, event);
+                getApplicationContext().sendBroadcast(mediaEvent);
+            }
+        }, 100);
     }
 
     /***
     private Runnable runRecognizeGesture = new Runnable() {
-        @Override
         public void run() {
             currentState = gestureRecognizer.determineGesture(values, currentTime);
         }
