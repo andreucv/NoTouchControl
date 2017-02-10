@@ -29,7 +29,7 @@ public class GestureListenerService extends Service {
     private long currentTime = 0;
     private long lastUpdate  = 0;
     private float filter = 1.00E-6f;
-    private float basefilter = 1.00E-8f;
+    private float baseFilter = 1.00E-7f;
     private int sensibility = 0;
     private float limitIntraGestures = 1000000000;
 
@@ -50,15 +50,10 @@ public class GestureListenerService extends Service {
                 currentY = event.values[1];
                 currentZ = event.values[2];
 
-                float deltaX = currentX - previousX;
-                float deltaY = currentY - previousY;
-                float deltaZ = currentZ - previousZ;
-                long  deltaTime = currentTime - lastUpdate;
-
                 calculateMovement();
 
                 Log.d(TAG, "Mov: " + movement);
-                if (movement > (filter + basefilter * sensibility)) {
+                if (movement > (filter + baseFilter * sensibility)) {
                     Log.d(TAG, "Filter pass with: " + movement);
                     currentState = State.TAP;
                     runAction();
@@ -175,5 +170,9 @@ public class GestureListenerService extends Service {
         currentState = State.NONE;
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         return START_STICKY;
+    }
+
+    public void changeSensibility(int sensibility){
+        this.sensibility = sensibility;
     }
 }

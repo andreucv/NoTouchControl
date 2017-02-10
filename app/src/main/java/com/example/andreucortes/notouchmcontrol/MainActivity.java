@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 sensibility = progress;
+                gestureListenerService.changeSensibility(sensibility);
             }
 
             @Override
@@ -45,10 +46,12 @@ public class MainActivity extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
+                gestureListenerService.changeSensibility(sensibility);
             }
         });
 
         seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
+        gestureListenerService.changeSensibility(sensibility);
         Intent gestureListenerServiceIntent = new Intent(this, GestureListenerService.class);
         bindService(gestureListenerServiceIntent, serviceConnection, BIND_AUTO_CREATE);
         Log.d(TAG, "Finished MainActivity.onCreate()");
