@@ -110,8 +110,6 @@ public class GestureListenerService extends Service {
     }
 
     private void toggleMusic(){
-        //audioManager.dispatchMediaKeyEvent(new KeyEvent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-
         Intent mediaEvent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
         mediaEvent.putExtra(Intent.EXTRA_KEY_EVENT, event);
