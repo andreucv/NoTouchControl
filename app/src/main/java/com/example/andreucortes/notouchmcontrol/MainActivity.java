@@ -16,9 +16,11 @@ public class MainActivity extends Activity {
     private final String TAG = "MainActivity";
 
     private SeekBar seekBarSensibility;
+    private SeekBar zAxisSensibility;
     private TextView seek_text;
 
     int sensibility;
+    int zsensibility;
 
     private GestureListenerService gestureListenerService;
 
@@ -49,6 +51,26 @@ public class MainActivity extends Activity {
                 gestureListenerService.changeSensibility(sensibility);
             }
         });
+
+        zAxisSensibility = (SeekBar) findViewById(R.id.zaxisvalue);
+        zAxisSensibility.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                zsensibility = progress;
+                gestureListenerService.changeZSensibility(zsensibility);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                gestureListenerService.changeZSensibility(zsensibility);
+            }
+        });
+
 
         seek_text.setText("" + seekBarSensibility.getProgress() + "/" + seekBarSensibility.getMax());
         Intent gestureListenerServiceIntent = new Intent(this, GestureListenerService.class);

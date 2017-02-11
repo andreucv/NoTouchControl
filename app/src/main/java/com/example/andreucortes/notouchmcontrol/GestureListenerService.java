@@ -6,7 +6,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -31,14 +30,14 @@ public class GestureListenerService extends Service {
     private float filter = 1.00E-6f;
     private float baseFilter = 1.00E-7f;
     private int sensibility = 0;
+    private int zsensibility = 0;
     private float limitIntraGestures = 1000000000;
-
+    private long timeDifference = 0;
     private State currentState;
 
     private SensorManager sensorManager;
     private GestureRecognizer gestureRecognizer;
 
-    private AudioManager audioManager;
     private Binder binder = new LocalBinder();
 
     private SensorEventListener sensorEventListener = new SensorEventListener() {
@@ -52,8 +51,9 @@ public class GestureListenerService extends Service {
 
                 calculateMovement();
 
+                timeDifference = currentTime - lastUpdate;
                 Log.d(TAG, "Mov: " + movement);
-                if (movement > (filter + baseFilter * sensibility)) {
+                if (movement > (filter + baseFilter * sensibility * 2) && timeDifference > 17000000) {
                     Log.d(TAG, "Filter pass with: " + movement);
                     currentState = State.TAP;
                     runAction();
@@ -79,7 +79,11 @@ public class GestureListenerService extends Service {
         float deltaY = currentY - previousY;
         float deltaZ = currentZ - previousZ;
         long  deltaTime = currentTime - lastUpdate;
-        movement = Math.abs((deltaX + deltaY + deltaZ) / deltaTime);
+        if(deltaZ > zsensibility){
+            Log.d(TAG, "deltaZ positive: " + (deltaZ > 0? "true": "false") + " deltaZValue = " + deltaZ + "deltaZsensibility = " + zsensibility);
+            movement = (deltaX + deltaY + deltaZ*zsensibility) / deltaTime;
+        }
+        else movement = 0;
     }
 
     private void recognizeGesture(){
@@ -104,7 +108,7 @@ public class GestureListenerService extends Service {
 
     private void runAction(){
         if(currentState == State.TAP){
-            Log.d(TAG, "Toggling Music " + currentTime);
+            Log.d(TAG, "Toggling Music @:" + currentTime + " with sensibility: " + sensibility);
             toggleMusic();
         }
     }
@@ -140,10 +144,9 @@ public class GestureListenerService extends Service {
         List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(sensorEventListener, sensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
         currentTime = System.currentTimeMillis();
-        sensibility = intent.getIntExtra("sensibility", 10);
+        sensibility = intent.getIntExtra("sensibility", 0);
         gestureRecognizer = new GestureRecognizer(sensibility);
         currentState = State.NONE;
-        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         Log.d(TAG, "Finished onBind()");
         return binder;
     }
@@ -166,11 +169,14 @@ public class GestureListenerService extends Service {
         currentTime = System.currentTimeMillis();
         gestureRecognizer = new GestureRecognizer(intent.getIntExtra("sensibility", 10));
         currentState = State.NONE;
-        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         return START_STICKY;
     }
 
     public void changeSensibility(int sensibility){
         this.sensibility = sensibility;
+    }
+
+    public void changeZSensibility(int zsensibility) {
+        this.zsensibility = zsensibility;
     }
 }
