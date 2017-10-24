@@ -9,32 +9,123 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.andreucortes.notouchmcontrol.MainActivity">
 
+    <!-- Overall sensitivity -->
     <TextView
+        android:id="@+id/overall_sensitivity_text_selection"
+        android:text="Select here the sensitivity:"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select here the sensibility:"
-        android:id="@+id/sensibility_text"
-        android:layout_centerVertical="true"/>
+        android:layout_marginTop="@dimen/sensibility_seekbars_margin" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/overall_sensitivity_text_value"
         android:text="0/0"
-        android:id="@+id/seek_text"
-        android:layout_below="@id/sensibility_text"/>
-
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/overall_sensitivity_seekbar"
+        android:layout_alignParentEnd="true" />
     <SeekBar
+        android:id="@+id/overall_sensitivity_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/sensibility_bar"
-        android:layout_below="@id/seek_text"
-        android:max="20" />
+        android:max="20"
+        android:layout_below="@+id/overall_sensitivity_text_selection" />
+
+    <!-- Z sensitivity -->
+    <TextView
+        android:id="@+id/z_axis_sensitivity_text_selection"
+        android:text="Select here the Z axis sensitivity:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sensibility_seekbars_margin"
+        android:layout_below="@+id/overall_sensitivity_seekbar" />
+
+    <TextView
+        android:id="@+id/z_axis_sensitivity_text_value"
+        android:text="0/0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/z_axis_sensitivity_seekbar"
+        android:layout_alignParentEnd="true" />
 
     <SeekBar
+        android:id="@+id/z_axis_sensitivity_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/zaxisvalue"
-        android:layout_below="@id/sensibility_bar"
-        android:max="20"/>
+        android:max="20"
+        android:layout_below="@+id/z_axis_sensitivity_text_selection"/>
+
+    <!-- Magnetic sensitivity -->
+    <TextView
+        android:id="@+id/magnetic_sensitivity_text"
+        android:text="Select the Magnetic sensitivity:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sensibility_seekbars_margin"
+        android:layout_below="@+id/z_axis_sensitivity_seekbar" />
+
+    <TextView
+        android:id="@+id/magnetic_sensitivity_text_value"
+        android:text="0/0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/magnetic_sensitivity_seekbar"
+        android:layout_alignParentEnd="true" />
+
+    <SeekBar
+        android:id="@+id/magnetic_sensitivity_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="20"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/magnetic_sensitivity_text"/>
+
+
+    <!-- Toggle Button Music Pause -->
+    <ToggleButton
+        android:id="@+id/toggleMusicButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/magnetic_sensitivity_seekbar"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:layout_marginTop="@dimen/sensibility_seekbars_margin"
+        android:checked="false"
+        android:textOff="NOW MUTING MUSIC"
+        android:textOn="NOW PAUSING MUSIC" />
+
+    <LinearLayout
+        android:id="@+id/linearButtonsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toggleMusicButton"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/activity_vertical_margin">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonAccelerometer"
+            android:text="KNOCK"
+            android:layout_marginEnd="@dimen/activity_vertical_margin"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonMagneticField"
+            android:text="MAGNET"
+            android:layout_marginStart="@dimen/activity_vertical_margin"/>
+    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/currentRecognizeTypeText"
+        android:text="KNOCK"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/linearButtonsLayout"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
