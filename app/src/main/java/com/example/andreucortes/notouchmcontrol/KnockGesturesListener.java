@@ -5,44 +5,39 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import static java.lang.Math.abs;
+
 public class KnockGesturesListener extends GestureListenerService {
 
     private final String TAG = "KnockGesturesListner";
     private Binder binder = new LocalBinder();
-    private boolean disableService = false;
 
     private float movement = 0;
     private long  deltaTime = 0;
+    private long delayBetweenRecognitions = 1000000;
 
     private float filter = 1.00E-6f;
     private float baseFilter = 1.00E-7f;
     private int sensibility = 0;
     private int zSensibility = 0;
-
     private MySensorEvent currentEvent, lastEvent;
-
-    // Second approach variables
-    private float derivativeFactor1, derivativeFactor2;
-    private float integralFactor1;
-    private long accumulatedTime;
-
-    // Third approach variables
-    private IntegralFactor integralFactor;
-
-    // Forth approach variables
-    private long lastShakeFactor;
-    private long SHAKE_TIME_TO_WAIT_MS = 700;
+    private int lastEventsListSize = 100;
+    private ArrayList<MySensorEvent> lastEvents = new ArrayList<>(lastEventsListSize);
 
     // Listener for accelerometer sensor.
     private SensorEventListener sensorEventListener = new SensorEventListener() {
@@ -51,17 +46,26 @@ public class KnockGesturesListener extends GestureListenerService {
             synchronized (this) {
                 // get event
                 currentEvent = new MySensorEvent(event);
-                Log.d(TAG, "read event!");
+                Log.d(TAG, "read event! Remaining delay = " + delayBetweenRecognitions + "; DeltaTime = " + deltaTime);
 
-                // comment the evaluation you don't want to debug
-                evaluateEventFirstApproach();
-                //evaluateEventSecondApproach();
-                // TODO: acabar esto
-                //evaluateEventThirdApproach();
-                //evaluateEventForthApproach();
+                boolean result = evaluateEvent();
 
-                // store past event
+                if(result && delayBetweenRecognitions < 0){
+                    Log.d(TAG, "Filter pass with: " + movement);
+                    runAction(Gestures.TAP);
+                    make_sound("before");
+                    // listen();
+                    delayBetweenRecognitions = deltaTime*lastEventsListSize;
+                }
+                else{
+                    // count timeout
+                    delayBetweenRecognitions -= deltaTime;
+                }
+
+                // store past events
                 lastEvent = new MySensorEvent(currentEvent);
+                lastEvents.add(0, currentEvent);
+                if(lastEvents.size() > lastEventsListSize) lastEvents.remove(lastEventsListSize);
             }
         }
 
@@ -74,7 +78,7 @@ public class KnockGesturesListener extends GestureListenerService {
     /**
      *  First approach to an algorithm that calculates a movement
      */
-    private void evaluateEventFirstApproach(){
+    private boolean evaluateEvent(){
         // Get variations from current event against lastEvent
         float deltaX = currentEvent.values[0] - lastEvent.values[0];
         float deltaY = currentEvent.values[1] - lastEvent.values[1];
@@ -82,10 +86,10 @@ public class KnockGesturesListener extends GestureListenerService {
         deltaTime = currentEvent.timestamp - lastEvent.timestamp;
 
         // Apply a low pass filter adjustable
-        Log.d(TAG, "deltaZ positive: " + (deltaZ > 0? "true": "false") + " deltaZValue = " + deltaZ + "deltaZsensibility = " + zSensibility);
-        if(deltaZ > zSensibility){
+        Log.d(TAG, "deltaZ positive: " + (deltaZ > 0? "true": "false") + "; deltaZValue = " + deltaZ + "; deltaZsensibility = " + zSensibility);
+        if(abs(deltaZ) > zSensibility){
             // Calculate movement if passed the filter
-            movement = (deltaX + deltaY + deltaZ* zSensibility) / deltaTime;
+            movement = (abs(deltaX) + abs(deltaY) + abs(deltaZ)* zSensibility) / deltaTime;
         }
         else movement = 0;
 
@@ -93,16 +97,17 @@ public class KnockGesturesListener extends GestureListenerService {
 
         Log.d(TAG, "Mov: " + movement);
         if (movement > (filter + baseFilter * sensibility * 2) && deltaTime > 17000000) {
-            Log.d(TAG, "Filter pass with: " + movement);
-            runAction(Gestures.TAP);
+            return true;
         }
+
+        return false;
     }
 
     /**
      *  Second approach to an algorithm that calculates a tap
      *  It uses the peak identification in the integral vector of sensor registered movement.
      *  In this approach I only investigate on the Z axis.
-     */
+     *
     private void evaluateEventSecondApproach(){
         derivativeFactor1 = currentEvent.values[2] - lastEvent.values[2];
         integralFactor1 = derivativeFactor1 - derivativeFactor2;
@@ -134,10 +139,10 @@ public class KnockGesturesListener extends GestureListenerService {
         }
     }
 
-    /**
+
      *  Forth approach.
      *  Not valid. Possibly we could use this approach mixed with the second or third ones.
-     */
+     *
     private void evaluateEventForthApproach(){
         if((currentEvent.timestamp - lastShakeFactor) > SHAKE_TIME_TO_WAIT_MS){
             lastShakeFactor = currentEvent.timestamp;
@@ -154,6 +159,28 @@ public class KnockGesturesListener extends GestureListenerService {
     }
 
 
+     *  Forth approach.
+     *  Not valid. Possibly we could use this approach mixed with the second or third ones.
+     *
+    private void evaluateEventFifthApproach(){
+        if((currentEvent.timestamp - lastShakeFactor) > SHAKE_TIME_TO_WAIT_MS){
+            lastShakeFactor = currentEvent.timestamp;
+
+            float x = currentEvent.values[0] / SensorManager.GRAVITY_EARTH;
+            float y = currentEvent.values[1] / SensorManager.GRAVITY_EARTH;
+            float z = currentEvent.values[2] / SensorManager.GRAVITY_EARTH;
+
+            double force = Math.sqrt(x*x+y*y+z*z);
+            if(force > sensibility){
+                runAction(Gestures.TAP);
+                make_sound("before");
+                // listen();
+            }
+        }
+    }
+    **/
+
+
 
     @Nullable
     @Override
@@ -167,11 +194,67 @@ public class KnockGesturesListener extends GestureListenerService {
 
         // Apply your needs
         sensibility = intent.getIntExtra("sensibility", 0);
-        integralFactor = new IntegralFactor();
 
         // Finished onBind
         Log.d(TAG, "Finished onBind()");
         return binder;
+    }
+
+    /**
+    public void listen(){
+        Log.d(TAG, "listen: listening for results!");
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "listen: listening for results in the runnable!");
+                speechRecognizer.startListening(speechIntent);
+            }
+        };
+        mainHandler.post(myRunnable);
+        Runnable stopRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "listen: stop listening in runnable");
+                speechRecognizer.stopListening();
+            }
+        };
+        mainHandler.postAtTime(stopRunnable, 2000000);
+    }
+    **/
+
+    public void make_sound(String when){
+        Uri path = Uri.parse("android.resource://" + getPackageName() + "/raw/appointed.mp3");
+        switch(when){
+            case "before":
+                try {
+                    path = Uri.parse("android.resource://" + getPackageName() + "/raw/appointed.mp3");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "after":
+                try {
+                    path = Uri.parse("android.resource://" + getPackageName() + "/raw/case_closed.mp3");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "ok":
+                try {
+                    path = Uri.parse("android.resource://" + getPackageName() + "/raw/job_done.mp3");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+        Log.d(TAG, "make_sound: sounding now?");
+        Ringtone re = RingtoneManager.getRingtone(getApplicationContext(), path);
+        re.play();
+    }
+
+    public void update_results(){
+        make_sound("after");
     }
 
     @Override
@@ -198,11 +281,6 @@ public class KnockGesturesListener extends GestureListenerService {
 
     public void changeZSensibility(int zsensibility) {
         this.zSensibility = zsensibility;
-    }
-
-    public void setDisableService(){
-        disableService = true;
-        stopSelf();
     }
 }
 

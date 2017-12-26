@@ -48,13 +48,13 @@ public class MagneticGesturesListener extends GestureListenerService {
     };
 
     public void evaluate(){
-        float delta = abs(currentEvent.values[0]) - abs(lastEvent.values[0]); //+ abs(currentEvent.values[1]) - abs(lastEvent.values[1]) + abs(currentEvent.values[2]) - abs(lastEvent.values[2]);
+        float delta = abs(abs(currentEvent.values[0]) - abs(lastEvent.values[0])); //+ abs(currentEvent.values[1]) - abs(lastEvent.values[1]) + abs(currentEvent.values[2]) - abs(lastEvent.values[2]);
         float deltaTime = (float) ((currentEvent.timestamp - lastEvent.timestamp)/1E8);
 
         Log.d(TAG, "deltaMagn: " + delta + "; deltaTime: " + deltaTime + "; magneticSensitivity: " + magneticSensitivity);
         if(delay > 0) delay--;
         Log.d(TAG, "delay: " + delay);
-        if((delta/deltaTime) > magneticSensitivity/deltaTime && delay == 0){
+        if((delta) > magneticSensitivity && delay == 0){
             Log.d(TAG, "runningAction");
             Log.d(TAG, "decision: " + (delta/deltaTime > magneticSensitivity*magneticFactor/deltaTime));
             Log.d(TAG, "decision: deltaMagn: " + delta + "; deltaTime: " + deltaTime + "; division: "+ delta/deltaTime + "; magneticSensitivity: " + magneticSensitivity);
