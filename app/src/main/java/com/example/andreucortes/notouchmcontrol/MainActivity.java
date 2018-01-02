@@ -39,6 +39,8 @@ public class MainActivity extends Activity {
         final TextView overallSensitivityTextValue;
         final SeekBar zAxisSensitivitySeekBar;
         final TextView zAxisSensitivityTextValue;
+        final SeekBar delayBetweenEventsSeekBar;
+        final TextView delayBetweenEventsTextValue;
         final SeekBar magneticSensitivitySeekBar;
         final TextView magneticSensitivityTextValue;
 
@@ -82,6 +84,26 @@ public class MainActivity extends Activity {
                 knockGesturesListener.changeZSensibility(seekBar.getProgress());
             }
         });
+
+        delayBetweenEventsTextValue = (TextView) findViewById(R.id.delay_between_events_text_value);
+        delayBetweenEventsSeekBar = (SeekBar) findViewById(R.id.delay_between_events_seekbar);
+        delayBetweenEventsSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                delayBetweenEventsTextValue.setText(seekBar.getProgress() + "/" + seekBar.getMax());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                delayBetweenEventsTextValue.setText(seekBar.getProgress() + "/" + seekBar.getMax());
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                knockGesturesListener.changeDelay(seekBar.getProgress());
+            }
+        });
+
 
         magneticSensitivityTextValue = (TextView) findViewById(R.id.magnetic_sensitivity_text_value);
         magneticSensitivitySeekBar = (SeekBar) findViewById(R.id.magnetic_sensitivity_seekbar);
@@ -142,7 +164,7 @@ public class MainActivity extends Activity {
         currentRecognizeTypeText.setText(currentRecognizeType.toString());
 
         bindService(new Intent(getApplicationContext(), KnockGesturesListener.class), knockServiceConnection, BIND_AUTO_CREATE);
-        bindService(new Intent(getApplicationContext(), MagneticGesturesListener.class), knockServiceConnection, BIND_AUTO_CREATE);
+        bindService(new Intent(getApplicationContext(), MagneticGesturesListener.class), magneticServiceConnection, BIND_AUTO_CREATE);
         disconnectActualServices();
 
         Log.d(TAG, "Finished onCreate()");
@@ -212,5 +234,20 @@ public class MainActivity extends Activity {
             }
         }
         return false;
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if(String.valueOf(requestCode) == KnockGesturesListener.ACTION_HANDLE_DATA && resultCode == RESULT_OK){
+            notifyService(data);
+        }
+    }
+
+    private void notifyService(final Intent data){
+        final Intent intent = new Intent(this, KnockGesturesListener.class);
+        intent.setAction(KnockGesturesListener.ACTION_HANDLE_DATA);
+        intent.putExtra(KnockGesturesListener.EXTRA_DATA, data);
+        startService(intent);
     }
 }

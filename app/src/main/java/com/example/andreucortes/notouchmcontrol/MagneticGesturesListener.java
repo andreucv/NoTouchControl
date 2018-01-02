@@ -2,8 +2,6 @@ package com.example.andreucortes.notouchmcontrol;
 
 import android.content.Intent;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.IBinder;
@@ -23,31 +21,12 @@ public class MagneticGesturesListener extends GestureListenerService {
     }
 
     String TAG = "MagneticGesturesListner";
-    MySensorEvent currentEvent, lastEvent;
     int magneticSensitivity = 0;
     int magneticFactor = 100000;
     int delay = 5;
 
-    SensorEventListener sensorEventListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            synchronized (this) {
-                currentEvent = new MySensorEvent(event);
-                Log.d(TAG, "read event!");
-
-                evaluate();
-
-                lastEvent = new MySensorEvent(currentEvent);
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
-    public void evaluate(){
+    @Override
+    public boolean evaluateEvent(){
         float delta = abs(abs(currentEvent.values[0]) - abs(lastEvent.values[0])); //+ abs(currentEvent.values[1]) - abs(lastEvent.values[1]) + abs(currentEvent.values[2]) - abs(lastEvent.values[2]);
         float deltaTime = (float) ((currentEvent.timestamp - lastEvent.timestamp)/1E8);
 
@@ -58,9 +37,10 @@ public class MagneticGesturesListener extends GestureListenerService {
             Log.d(TAG, "runningAction");
             Log.d(TAG, "decision: " + (delta/deltaTime > magneticSensitivity*magneticFactor/deltaTime));
             Log.d(TAG, "decision: deltaMagn: " + delta + "; deltaTime: " + deltaTime + "; division: "+ delta/deltaTime + "; magneticSensitivity: " + magneticSensitivity);
-            runAction(Gestures.TAP);
             delay = 5;
+            return true;
         }
+        return false;
     }
 
     public void changeMagneticSensitivity(int magneticSensitivity){
@@ -78,7 +58,7 @@ public class MagneticGesturesListener extends GestureListenerService {
         lastEvent = new MySensorEvent();
 
         // Apply your needs
-
+        magneticSensitivity = intent.getIntExtra("sensibility", 0);
 
         // Finished onBind
         Log.d(TAG, "Finished onBind()");
@@ -88,8 +68,12 @@ public class MagneticGesturesListener extends GestureListenerService {
     @Override
     public boolean onUnbind(Intent intent){
         Log.d(TAG, "onUnbind()");
-        sensorManager.unregisterListener(sensorEventListener);
+        // Should call super.onUnbind() to unbind correctly the sensor listener.
         super.onUnbind(intent);
         return false;
+    }
+
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return super.onStartCommand(intent, flags, startId);
     }
 }
